@@ -1,0 +1,26 @@
+version: '2.0'
+
+services:
+  cron-handle-games:
+    extends: base
+    container_name: cron-handle-games
+    image: cron-handle-games
+    command: yarn ts-node ./src/main.ts cron ./crons/configs/handleGamesConfig.json 
+
+  base:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    volumes:
+        - .:/usr/src/app
+    restart: unless-stopped
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - app-network
+
+networks:
+    app-network:
+        driver: bridge

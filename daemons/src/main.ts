@@ -45,7 +45,7 @@ async function runCron(configFile: string) {
   });
 
   // Start job
-  if (cronJob.running) {
+  if (!cronJob.running) {
     cronJob.start();
   }
 }

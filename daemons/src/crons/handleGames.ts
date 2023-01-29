@@ -1,3 +1,4 @@
+import { Connection } from '@solana/web3.js';
 import { CronConfig } from '../main';
 
 type HandleGamesConfig = CronConfig & {
@@ -6,4 +7,5 @@ type HandleGamesConfig = CronConfig & {
 
 export async function handleGames(config: HandleGamesConfig) {
   console.log('Handling Game');
+  const connection = new Connection(config.rpcURL);
 }

@@ -3,6 +3,7 @@
     "typescript": "^4.9.4"
   },
   "dependencies": {
+    "@solana/web3.js": "^1.73.0",
     "@types/cron": "^2.0.0",
     "@types/node": "^18.11.18",
     "commander": "^10.0.0",

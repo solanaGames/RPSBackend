@@ -1,5 +1,5 @@
 {
     "name": "handleGames",
-    "schedule": "* * 0 * * ",
+    "schedule": "* * * * * *",
     "rpcURL": ""
 }
