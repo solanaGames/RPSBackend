@@ -32,9 +32,14 @@ async function runCron(configFile: string) {
   }
   const cronJob = new CronJob(config.schedule, async () => {
     try {
+      console.log(`${nowString()}: Starting cron job ${config.name}`);
       await func(config);
+      const end = new Date(Date.now()).toLocaleString();
+      console.log(`${nowString()}: Finished running cron job ${config.name}`);
     } catch (e) {
-      console.error(`Cron job ${config.name} failed eith error:`);
+      console.error(
+        `${nowString()}: Cron job ${config.name} failed eith error:`,
+      );
       console.error(e);
     }
   });
@@ -43,6 +48,10 @@ async function runCron(configFile: string) {
   if (cronJob.running) {
     cronJob.start();
   }
+}
+
+function nowString() {
+  return new Date(Date.now()).toLocaleString();
 }
 
 program.parse();
