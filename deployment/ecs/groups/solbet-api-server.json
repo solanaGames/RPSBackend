@@ -3,11 +3,11 @@
   "deployments": [
     {
       "id": "solbet-api-server",
-      "imageReposity": "solbet-api-server",
+      "imageRepository": "solbet-api-server",
       "taskTemplate": "./ecs/tasks/templates/solbet-api-server.json",
       "taskReplacements": {
         "$.containerDefinitions[0]": {
-          "image": "377686316741.dkr.ecr.us-west-1.amazonaws.com/solbet-api-server:d42482da910f1a027dd2aabaa79415a160ae5f3c"
+          "image": "377686316741.dkr.ecr.us-west-1.amazonaws.com/solbet-api-server:1d389d604063a3fc3422222fc4080c8e4b9ceea6"
         }
       }
     }

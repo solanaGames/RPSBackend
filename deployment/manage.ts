@@ -82,11 +82,11 @@ const NAMESPACE_TO_DEPLOY_CONFIG: { [key: string]: string } = {
 // to the laste image.
 async function bumpDeploymentFileImages(deploymentFile: string) {
   const deploymentData = require(deploymentFile);
-  const repoName = deploymentData.imageRepository;
-  const latestImageHash = await awsCli(
-    `ecr describe-images --repository-name ${repoName} --query 'sort_by(imageDetails,& imagePushedAt)[-1].imageTags[0]'`,
-  );
   for (const deployment of deploymentData['deployments']) {
+    const repoName = deployment.imageRepository;
+    const latestImageHash = await awsCli(
+      `ecr describe-images --repository-name ${repoName} --query 'sort_by(imageDetails,& imagePushedAt)[-1].imageTags[0]'`,
+    );
     const oldImage =
       deployment['taskReplacements']['$.containerDefinitions[0]']['image'];
     const newImage = oldImage.split(':')[0] + ':' + latestImageHash;
