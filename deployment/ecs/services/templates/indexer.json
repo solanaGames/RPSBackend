@@ -1,0 +1,41 @@
+{
+    "cluster": "solend-backend",
+    "serviceName": "",
+    "taskDefinition": "",
+    "loadBalancers": [],
+    "serviceRegistries": [],
+    "desiredCount": 1,
+    "clientToken": "",
+    "launchType": "EC2",
+    "capacityProviderStrategy": [],
+    "deploymentConfiguration": {
+        "deploymentCircuitBreaker": {
+            "enable": true,
+            "rollback": true
+        },
+        "maximumPercent": 100,
+        "minimumHealthyPercent": 0
+    },
+    "placementConstraints": [],
+    "placementStrategy": [
+        {
+            "type": "spread",
+            "field": "attribute:ecs.availability-zone"
+        },
+        {
+            "type": "spread",
+            "field": "instanceId"
+        }
+    ],
+    "schedulingStrategy": "REPLICA",
+    "deploymentController": {
+        "type": "ECS"
+    },
+    "tags": [
+        {
+            "key": "role",
+            "value": "solend-indexer"
+        }
+    ],
+    "enableExecuteCommand": false
+}

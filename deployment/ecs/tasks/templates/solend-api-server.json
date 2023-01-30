@@ -1,0 +1,132 @@
+{
+    "family": "solend-api-server",
+    "taskRoleArn": "arn:aws:iam::005267696098:role/ecsTaskExecutionRole",
+    "executionRoleArn": "",
+    "networkMode": "bridge",
+    "containerDefinitions": [
+        {
+            "name": "solend-api-server",
+            "image": "005267696098.dkr.ecr.us-east-2.amazonaws.com/solend-api-server:afcd6f57d36691c33b4a5b131603539ec35e60d0",
+            "cpu": 1024,
+            "memory": 1500,
+            "memoryReservation": 1500,
+            "links": [],
+            "portMappings": [
+                {
+                    "containerPort": 3001,
+                    "hostPort": 0,
+                    "protocol": "tcp"
+                }
+            ],
+            "essential": true,
+            "entryPoint": [],
+            "workingDirectory": "/home/solend/app/api",
+            "command": [
+                "yarn",
+                "start"
+            ],
+            "environment": [
+                {
+                    "name": "DATADOG_HOST",
+                    "value": "datadog-fargate.datadog"
+                },
+                {
+                    "name": "DATADOG_SERVICE_NAME",
+                    "value": "solend-api-server"
+                },
+                {
+                    "name": "DATADOG_TRACE_AGENT_HOSTNAME",
+                    "value": "datadog-fargate.datadog"
+                },
+                {
+                    "name": "DD_ANALYTICS_ENABLED",
+                    "value": "true"
+                },
+                {
+                    "name": "DD_ENV",
+                    "value": "production"
+                },
+                {
+                    "name": "DD_AGENT_HOST",
+                    "value": "datadog-fargate.datadog"
+                },
+                {
+                    "name": "DD_LOGS_INJECTION",
+                    "value": "true"
+                },
+                {
+                    "name": "DD_TRACE_SAMPLE_RATE",
+                    "value": "0.1"
+                }
+            ],
+            "environmentFiles": [],
+            "mountPoints": [],
+            "volumesFrom": [],
+            "linuxParameters": {
+                "capabilities": {
+                    "add": [],
+                    "drop": []
+                },
+                "devices": [],
+                "initProcessEnabled": true,
+                "sharedMemorySize": 500,
+                "tmpfs": [],
+                "maxSwap": 0,
+                "swappiness": 0
+            },
+            "secrets": [],
+            "dependsOn": [],
+            "startTimeout": 30,
+            "stopTimeout": 30,
+            "disableNetworking": false,
+            "privileged": false,
+            "readonlyRootFilesystem": false,
+            "dnsServers": [],
+            "dnsSearchDomains": [],
+            "extraHosts": [],
+            "dockerSecurityOptions": [],
+            "interactive": true,
+            "pseudoTerminal": true,
+            "dockerLabels": {},
+            "ulimits": [
+                {
+                    "name": "core",
+                    "softLimit": 0,
+                    "hardLimit": 0
+                }
+            ],
+            "logConfiguration": {
+                "logDriver": "json-file",
+                "options": {},
+                "secretOptions": []
+            },
+            "healthCheck": {
+                "command": [
+                    "ls"
+                ],
+                "interval": 5,
+                "timeout": 2,
+                "retries": 1,
+                "startPeriod": 100
+            },
+            "systemControls": [],
+            "resourceRequirements": []
+        }
+    ],
+    "volumes": [],
+    "placementConstraints": [],
+    "requiresCompatibilities": [
+        "EC2"
+    ],
+    "cpu": "1024",
+    "memory": "1500",
+    "tags": [
+        {
+            "key": "role",
+            "value": "solend-api-server"
+        }
+    ],
+    "pidMode": "host",
+    "ipcMode": "host",
+    "inferenceAccelerators": []
+}

@@ -1,9 +1,9 @@
 FROM node:18.8.0-alpine
 RUN apk add --no-cache git openssh
 
-RUN mkdir -p /home/SolRPS/app
+RUN mkdir -p /home/solbet/app
 
-COPY . /home/SolRPS/app/
+COPY . /home/solbet/app/
 
-WORKDIR /home/SolRPS/app
+WORKDIR /home/solbet/app
 RUN yarn

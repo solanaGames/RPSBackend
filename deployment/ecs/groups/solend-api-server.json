@@ -1,0 +1,14 @@
+{
+  "namespace": "api",
+  "deployments": [
+    {
+      "id": "solend-api-server",
+      "taskTemplate": "./deployment/ecs/tasks/templates/solend-api-server.json",
+      "taskReplacements": {
+        "$.containerDefinitions[0]": {
+          "image": "005267696098.dkr.ecr.us-east-2.amazonaws.com/solend-api-server:68293d73a56b8c531dd38f8d57922b1472ff770c"
+        }
+      }
+    }
+  ]
+}
