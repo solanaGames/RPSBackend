@@ -1,64 +1,22 @@
 {
-    "family": "solend-api-server",
-    "taskRoleArn": "arn:aws:iam::005267696098:role/ecsTaskExecutionRole",
+    "family": "",
+    "taskRoleArn": "arn:aws:iam::377686316741:role/ecsTaskExecutionRole",
     "executionRoleArn": "",
     "networkMode": "bridge",
     "containerDefinitions": [
         {
-            "name": "solend-api-server",
-            "image": "005267696098.dkr.ecr.us-east-2.amazonaws.com/solend-api-server:afcd6f57d36691c33b4a5b131603539ec35e60d0",
-            "cpu": 1024,
-            "memory": 1500,
-            "memoryReservation": 1500,
+            "name": "daemon",
+            "image": "",
+            "cpu": 512,
+            "memory": 14000,
+            "memoryReservation": 14000,
             "links": [],
-            "portMappings": [
-                {
-                    "containerPort": 3001,
-                    "hostPort": 0,
-                    "protocol": "tcp"
-                }
-            ],
+            "portMappings": [],
             "essential": true,
             "entryPoint": [],
-            "workingDirectory": "/home/solend/app/api",
-            "command": [
-                "yarn",
-                "start"
-            ],
-            "environment": [
-                {
-                    "name": "DATADOG_HOST",
-                    "value": "datadog-fargate.datadog"
-                },
-                {
-                    "name": "DATADOG_SERVICE_NAME",
-                    "value": "solend-api-server"
-                },
-                {
-                    "name": "DATADOG_TRACE_AGENT_HOSTNAME",
-                    "value": "datadog-fargate.datadog"
-                },
-                {
-                    "name": "DD_ANALYTICS_ENABLED",
-                    "value": "true"
-                },
-                {
-                    "name": "DD_ENV",
-                    "value": "production"
-                },
-                {
-                    "name": "DD_AGENT_HOST",
-                    "value": "datadog-fargate.datadog"
-                },
-                {
-                    "name": "DD_LOGS_INJECTION",
-                    "value": "true"
-                },
-                {
-                    "name": "DD_TRACE_SAMPLE_RATE",
-                    "value": "0.1"
-                }
-            ],
+            "workingDirectory": "/home/solbet/app/",
+            "command": [],
+            "environment": [],
             "environmentFiles": [],
             "mountPoints": [],
             "volumesFrom": [],
@@ -69,7 +27,7 @@
                 },
                 "devices": [],
                 "initProcessEnabled": true,
-                "sharedMemorySize": 500,
+                "sharedMemorySize": 14000,
                 "tmpfs": [],
                 "maxSwap": 0,
                 "swappiness": 0
@@ -97,7 +55,9 @@
             ],
             "logConfiguration": {
                 "logDriver": "json-file",
-                "options": {},
+                "options": {
+                    "max-size": "256m"
+                },
                 "secretOptions": []
             },
             "healthCheck": {
@@ -118,12 +78,12 @@
     "requiresCompatibilities": [
         "EC2"
     ],
-    "cpu": "1024",
-    "memory": "1500",
+    "cpu": "512",
+    "memory": "14000",
     "tags": [
         {
             "key": "role",
-            "value": "solend-api-server"
+            "value": "solbet-daemons"
         }
     ],
     "pidMode": "host",

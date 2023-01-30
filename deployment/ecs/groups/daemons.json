@@ -1,0 +1,31 @@
+{
+  "namespace": "daemons",
+  "deployments": [
+    {
+      "id": "game-handler",
+      "imageRepository": "solbet-daemons",
+      "taskTemplate": "./ecs/tasks/templates/daemons.json",
+      "taskReplacements": {
+        "$": {
+          "memory": "8000",
+          "cpu": "1024"
+        },
+        "$.containerDefinitions[0]": {
+          "cpu": 1024,
+          "memory": 8000,
+          "memoryReservation": 8000,
+          "image": "377686316741.dkr.ecr.us-west-1.amazonaws.com/solbet-daemons:d42482da910f1a027dd2aabaa79415a160ae5f3c",
+          "command": [
+            "yarn",
+            "ts-node",
+            "./src/main.ts",
+            "cron",
+            "./crons/configs/handleGamesConfig.json"
+          ]
+        }
+      },
+      "serviceTemplate": "./ecs/services/templates/daemons.json",
+      "serviceReplacements": {}
+    }
+  ]
+}

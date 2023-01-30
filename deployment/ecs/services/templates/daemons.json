@@ -1,5 +1,5 @@
 {
-    "cluster": "solend-backend",
+    "cluster": "solbet-backend",
     "serviceName": "",
     "taskDefinition": "",
     "loadBalancers": [],
@@ -34,7 +34,7 @@
     "tags": [
         {
             "key": "role",
-            "value": "solend-indexer"
+            "value": "solbet-daemons"
         }
     ],
     "enableExecuteCommand": false

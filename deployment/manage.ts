@@ -34,12 +34,6 @@ program
     console.log(Object.keys(NAMESPACE_TO_DEPLOY_CONFIG));
   });
 
-program
-  .command('redis-cmd <cmd> [args...]')
-  .description('Runs cmd on all nodes in redis cluster')
-  .action(async (cmd: string, args: string[]) => {
-    await redisCmd(cmd, args);
-  });
 
 program
   .command('bump <serviceOrNamespace>')
@@ -50,14 +44,14 @@ program
 
 program
   .command('list-services')
-  .description('List all services running in the solend-backend cluster')
+  .description('List all services running in the solbet ecs cluster')
   .action(async () => {
     await listServices();
   });
 
 program
   .command('list-tasks')
-  .description('List all the tasks running in the solend-backend cluster')
+  .description('List all the tasks running in the solbet ecs cluster')
   .action(async () => {
     await listTasks();
   });
@@ -76,32 +70,22 @@ program
     await showService(serviceName);
   });
 
-program
-  .command('dump')
-  .description('Dumps a bunch of ECS data')
-  .action(async () => {
-    await dumpData();
-  });
 
 // ECS Stuff starts here
 const ECS_CLUSTER_NAME = 'solbet-cluster';
-const ECR_REPO_NAME = 'solbet-rps';
 const NAMESPACE_TO_DEPLOY_CONFIG: { [key: string]: string } = {
-  daemons: './deployment/ecs/groups/daemons.json',
-  'liquidity-mining': './deployment/ecs/groups/liquidity-mining.json',
-  'data-indexers': './deployment/ecs/groups/data_indexers.json',
-  'solend-api-server-dev': './deployment/ecs/groups/solend-api-server-dev.json',
-  'solend-api-server': './deployment/ecs/groups/solend-api-server.json',
-  publisher: './deployment/ecs/groups/publisher.json',
+  'daemons': './ecs/groups/daemons.json',
+  'solbet-api-server': './ecs/groups/solbet-api-server.json',
 };
 
 // Bumps the image for every deployment task in the deployment file
 // to the laste image.
 async function bumpDeploymentFileImages(deploymentFile: string) {
-  const latestImageHash = await awsCli(
-    `ecr describe-images --repository-name ${ECR_REPO_NAME} --query 'sort_by(imageDetails,& imagePushedAt)[-1].imageTags[0]'`,
-  );
   const deploymentData = require(deploymentFile);
+  const repoName = deploymentData.imageRepository;
+  const latestImageHash = await awsCli(
+    `ecr describe-images --repository-name ${repoName} --query 'sort_by(imageDetails,& imagePushedAt)[-1].imageTags[0]'`,
+  );
   for (const deployment of deploymentData['deployments']) {
     const oldImage =
       deployment['taskReplacements']['$.containerDefinitions[0]']['image'];
@@ -163,15 +147,14 @@ async function syncDeployment(deploymentFile: string) {
     const taskNameAndRevision = `${serviceAndTaskName}:${resultJSON['taskDefinition']['revision']}`;
     const shouldCreateNewService =
       !allExistingServices.includes(serviceAndTaskName) &&
-      !serviceAndTaskName.includes('solend-api-server');
+      !serviceAndTaskName.includes('solbet-api-server');
 
     // Create a new service, or update an existing one
     if (!shouldCreateNewService) {
       console.log('Updating existing service to new task');
       serviceAndTaskName =
         {
-          'api-dev_solend-api-server-dev': 'solend-api-server-dev',
-          'api_solend-api-server': 'solend-api-server',
+          'api_solbet-api-server': 'solbet-api-server',
         }[serviceAndTaskName] || serviceAndTaskName;
       await updateServiceTask(serviceAndTaskName, taskNameAndRevision);
     } else {
@@ -219,7 +202,7 @@ async function syncDeployment(deploymentFile: string) {
   );
   for (const service of servicesToRemove) {
     await awsCli(
-      `ecs delete-service --cluster solend-backend --service ${service} --force`,
+      `ecs delete-service --cluster ${ECS_CLUSTER_NAME} --service ${service} --force`,
     );
   }
   console.log('Done');
@@ -247,47 +230,23 @@ async function updateServiceTask(serviceName: string, taskName: string) {
   );
 }
 
-async function redisCmd(cmd: string, args: string[]) {
-  let adminRoles = await roleInfo('admin', false);
-  let ec2InstanceDNS = adminRoles[0]['PublicDnsName'];
-  let result = await awsCli(
-    'elasticache describe-cache-clusters --show-cache-node-info',
-  );
-  let promises: Promise<string>[] = [];
-  for (let cluster of result['CacheClusters']) {
-    for (let node of cluster['CacheNodes']) {
-      let endpoint = node['Endpoint'];
-      promises.push(
-        shellCommand(
-          `ssh ubuntu@${ec2InstanceDNS} 'bash -s' < redis_cmd.sh ${
-            endpoint['Address']
-          } ${endpoint['Port']} ${cmd} ${args.join(' ')}`,
-        ),
-      );
-    }
-  }
-  (await Promise.all(promises)).forEach((returnVal, index, array) => {
-    console.log(returnVal);
-  });
-}
-
 async function deploy(serviceOrNamespace: string) {
   syncDeployment(NAMESPACE_TO_DEPLOY_CONFIG[serviceOrNamespace]);
 }
 
 async function bumpHash(serviceOrNamespace: string) {
-  if (serviceOrNamespace.includes('datadog')) {
-    console.log('Should not be changing the image of datadog');
-    return;
-  }
   await bumpDeploymentFileImages(
     NAMESPACE_TO_DEPLOY_CONFIG[serviceOrNamespace],
   );
 }
 
 async function awsCli(command: string) {
+  let profile = process.env.AWS_PROFILE;
+  if (profile === undefined) {
+    throw `Must set environment for AWS_PROFILE`;
+  }
   return JSON.parse(
-    await shellCommand(`AWS_DEFAULT_OUTPUT=json aws ${command}`),
+    await shellCommand(`AWS_DEFAULT_OUTPUT=json aws ${command} --profile ${profile}`),
   );
 }
 
@@ -307,18 +266,10 @@ async function shellCommand(command: string): Promise<string> {
   });
 }
 
-async function getSecret(secretARN: string): Promise<string> {
-  const result = await awsCli(
-    `secretsmanager get-secret-value --secret-id ${secretARN}`,
-  );
-  return result['SecretString'] as string;
-}
-
 async function getCaller() {
   const result = await awsCli('sts get-caller-identity');
   return result['Arn'].split('/')[1];
 }
-
 
 async function printDeployStartedMessage(
   newVersion: string,
@@ -329,7 +280,7 @@ async function printDeployStartedMessage(
     `\`${user}\` started a service deployment for revision ${newVersion} [${commitHash.substring(
       0,
       6,
-    )}](https://github.com/solendprotocol/indexer/commit/${commitHash}/)`,
+    )}](https://github.com/solbet1/RPSBackend/commit/${commitHash}/)`,
   );
 }
 
@@ -337,7 +288,7 @@ async function listServices() {
   const namespaceToColor: { [key: string]: string } = {};
   let colorIndex = 0;
 
-  const result = await awsCli('ecs list-services --cluster solend-backend');
+  const result = await awsCli(`ecs list-services --cluster ${ECS_CLUSTER_NAME}`);
   const serviceARNs = result['serviceArns'];
   const serviceDetails = await describeServices(serviceARNs);
   const sortedServices = serviceDetails.sort((a: any, b: any) =>
@@ -382,7 +333,7 @@ async function listTasks() {
     (x: any) => x['containerInstanceArn'],
   );
   const containerInstanceData = await awsCli(
-    `ecs describe-container-instances --cluster solend-backend --container-instances ${containerInstanceARNs.join(
+    `ecs describe-container-instances --cluster ${ECS_CLUSTER_NAME} --container-instances ${containerInstanceARNs.join(
       ' ',
     )}`,
   );
@@ -449,7 +400,7 @@ async function listInstances() {
     await awsCli(`ecs list-container-instances --cluster ${ECS_CLUSTER_NAME}`)
   )['containerInstanceArns'];
   const containerInstanceData = await awsCli(
-    `ecs describe-container-instances --cluster solend-backend --container-instances ${containerInstanceARNs.join(
+    `ecs describe-container-instances --cluster ${ECS_CLUSTER_NAME} --container-instances ${containerInstanceARNs.join(
       ' ',
     )}`,
   );
@@ -516,7 +467,7 @@ async function listInstances() {
 }
 
 async function getAllServiceNames(): Promise<string[]> {
-  const result = await awsCli('ecs list-services --cluster solend-backend');
+  const result = await awsCli(`ecs list-services --cluster ${ECS_CLUSTER_NAME}`);
   const serviceARNs = result['serviceArns'];
   const serviceDetails = await describeServices(serviceARNs);
   const services: string[] = [];
@@ -527,7 +478,7 @@ async function getAllServiceNames(): Promise<string[]> {
 }
 
 async function showService(name: string) {
-  const result = await awsCli('ecs list-services --cluster solend-backend');
+  const result = await awsCli(`ecs list-services --cluster ${ECS_CLUSTER_NAME}`);
   const serviceARNs = result['serviceArns'];
   const serviceDetails = await describeServices(serviceARNs);
   const eventsTable = new Table({ title: 'Services' });
@@ -623,42 +574,13 @@ async function roleInfo(role: string, verbose: boolean) {
   return Array.from(nameToInstance.values());
 }
 
-async function dumpData() {
-  await listServices();
-  await listTasks();
-  await listInstances();
-  const newTable = new Table({ title: 'Expected Tasks' });
-  for (const namespace of Object.keys(NAMESPACE_TO_DEPLOY_CONFIG)) {
-    const file = NAMESPACE_TO_DEPLOY_CONFIG[namespace];
-    const contents = require(file);
-    for (const d of contents['deployments']) {
-      newTable.addRow({
-        namespace: namespace,
-        file: file,
-        id: d['id'],
-      });
-    }
-  }
-  newTable.addRow({
-    namespace: '',
-    file: './deployment/tasks/solend-api-server.json',
-    id: 'solend-api-server',
-  });
-  newTable.addRow({
-    namespace: 'N/A',
-    file: './deployment/tasks/solend-api-server-dev.json',
-    id: 'solend-api-server-dev',
-  });
-  newTable.printTable();
-}
-
 async function describeServices(serviceARNs: string[]): Promise<any> {
   const chunkSize = 10;
   let result: any[] = [];
   for (let i = 0; i < serviceARNs.length; i += chunkSize) {
     const chunk = serviceARNs.slice(i, i + chunkSize);
     const serviceDetails = await awsCli(
-      `ecs describe-services --cluster solend-backend --services ${chunk.join(
+      `ecs describe-services --cluster ${ECS_CLUSTER_NAME} --services ${chunk.join(
         ' ',
       )}`,
     );

@@ -1,21 +1,30 @@
 {
-    "family": "",
-    "taskRoleArn": "arn:aws:iam::005267696098:role/ecsTaskExecutionRole",
+    "family": "solbet-api-server",
+    "taskRoleArn": "arn:aws:iam::377686316741:role/ecsTaskExecutionRole",
     "executionRoleArn": "",
     "networkMode": "bridge",
     "containerDefinitions": [
         {
-            "name": "indexer",
-            "image": "",
-            "cpu": 512,
-            "memory": 14000,
-            "memoryReservation": 14000,
+            "name": "solbet-api-server",
+            "image": "377686316741.dkr.ecr.us-west-1.amazonaws.com/solbet-api-server:d42482da910f1a027dd2aabaa79415a160ae5f3c",
+            "cpu": 1024,
+            "memory": 1500,
+            "memoryReservation": 1500,
             "links": [],
-            "portMappings": [],
+            "portMappings": [
+                {
+                    "containerPort": 3001,
+                    "hostPort": 0,
+                    "protocol": "tcp"
+                }
+            ],
             "essential": true,
             "entryPoint": [],
-            "workingDirectory": "/home/solend/app/indexer",
-            "command": [],
+            "workingDirectory": "/home/solbet/app",
+            "command": [
+                "yarn",
+                "start"
+            ],
             "environment": [],
             "environmentFiles": [],
             "mountPoints": [],
@@ -27,7 +36,7 @@
                 },
                 "devices": [],
                 "initProcessEnabled": true,
-                "sharedMemorySize": 14000,
+                "sharedMemorySize": 500,
                 "tmpfs": [],
                 "maxSwap": 0,
                 "swappiness": 0
@@ -55,9 +64,7 @@
             ],
             "logConfiguration": {
                 "logDriver": "json-file",
-                "options": {
-                    "max-size": "256m"
-                },
+                "options": {},
                 "secretOptions": []
             },
             "healthCheck": {
@@ -78,12 +85,12 @@
     "requiresCompatibilities": [
         "EC2"
     ],
-    "cpu": "512",
-    "memory": "14000",
+    "cpu": "1024",
+    "memory": "1500",
     "tags": [
         {
             "key": "role",
-            "value": "solend-indexer"
+            "value": "solbet-api-server"
         }
     ],
     "pidMode": "host",
