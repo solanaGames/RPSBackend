@@ -76,6 +76,7 @@ const ECS_CLUSTER_NAME = 'solbet-cluster';
 const NAMESPACE_TO_DEPLOY_CONFIG: { [key: string]: string } = {
   'daemons': './ecs/groups/daemons.json',
   'solbet-api-server': './ecs/groups/solbet-api-server.json',
+  'devnet': './ecs/groups/devnet.json',
 };
 
 // Bumps the image for every deployment task in the deployment file
