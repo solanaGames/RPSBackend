@@ -7,13 +7,13 @@
       "taskTemplate": "./ecs/tasks/templates/daemons.json",
       "taskReplacements": {
         "$": {
-          "memory": "500",
-          "cpu": "500"
+          "memory": "300",
+          "cpu": "300"
         },
         "$.containerDefinitions[0]": {
-          "cpu": 500,
-          "memory": 500,
-          "memoryReservation": 500,
+          "cpu": 300,
+          "memory": 300,
+          "memoryReservation": 300,
           "image": "377686316741.dkr.ecr.us-west-1.amazonaws.com/solbet-daemons:1c69ef5a5dbd8e3e06b65b4cdb5f20ea9054095b",
           "command": [
             "yarn",
@@ -33,13 +33,13 @@
       "taskTemplate": "./ecs/tasks/templates/daemons.json",
       "taskReplacements": {
         "$": {
-          "memory": "500",
-          "cpu": "500"
+          "memory": "300",
+          "cpu": "300"
         },
         "$.containerDefinitions[0]": {
-          "cpu": 500,
-          "memory": 500,
-          "memoryReservation": 500,
+          "cpu": 300,
+          "memory": 300,
+          "memoryReservation": 300,
           "image": "377686316741.dkr.ecr.us-west-1.amazonaws.com/solbet-daemons:1c69ef5a5dbd8e3e06b65b4cdb5f20ea9054095b",
           "command": [
             "yarn",
@@ -59,13 +59,13 @@
       "taskTemplate": "./ecs/tasks/templates/daemons.json",
       "taskReplacements": {
         "$": {
-          "memory": "500",
-          "cpu": "500"
+          "memory": "300",
+          "cpu": "300"
         },
         "$.containerDefinitions[0]": {
-          "cpu": 500,
-          "memory": 500,
-          "memoryReservation": 500,
+          "cpu": 300,
+          "memory": 300,
+          "memoryReservation": 300,
           "image": "377686316741.dkr.ecr.us-west-1.amazonaws.com/solbet-daemons:1c69ef5a5dbd8e3e06b65b4cdb5f20ea9054095b",
           "command": [
             "yarn",
@@ -79,6 +79,5 @@
       "serviceTemplate": "./ecs/services/templates/daemons.json",
       "serviceReplacements": {}
     }
-
   ]
 }
