@@ -46,7 +46,7 @@
             "ts-node",
             "./src/main.ts",
             "cron",
-            "./crons/configs/cleanExpiredGames.json"
+            "./crons/configs/cleanExpiredGamesConfig.json"
           ]
         }
       },
