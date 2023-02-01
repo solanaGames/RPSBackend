@@ -14,7 +14,7 @@
           "cpu": 300,
           "memory": 300,
           "memoryReservation": 300,
-          "image": "377686316741.dkr.ecr.us-west-1.amazonaws.com/solbet-daemons:1c69ef5a5dbd8e3e06b65b4cdb5f20ea9054095b",
+          "image": "377686316741.dkr.ecr.us-west-1.amazonaws.com/solbet-daemons:936a88711b9523cd611f12b49e3f415191cbbbf3",
           "command": [
             "yarn",
             "ts-node",
@@ -40,7 +40,7 @@
           "cpu": 300,
           "memory": 300,
           "memoryReservation": 300,
-          "image": "377686316741.dkr.ecr.us-west-1.amazonaws.com/solbet-daemons:1c69ef5a5dbd8e3e06b65b4cdb5f20ea9054095b",
+          "image": "377686316741.dkr.ecr.us-west-1.amazonaws.com/solbet-daemons:936a88711b9523cd611f12b49e3f415191cbbbf3",
           "command": [
             "yarn",
             "ts-node",
@@ -66,7 +66,7 @@
           "cpu": 300,
           "memory": 300,
           "memoryReservation": 300,
-          "image": "377686316741.dkr.ecr.us-west-1.amazonaws.com/solbet-daemons:1c69ef5a5dbd8e3e06b65b4cdb5f20ea9054095b",
+          "image": "377686316741.dkr.ecr.us-west-1.amazonaws.com/solbet-daemons:936a88711b9523cd611f12b49e3f415191cbbbf3",
           "command": [
             "yarn",
             "ts-node",

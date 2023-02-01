@@ -45,23 +45,31 @@ export async function cleanExpiredGames(config: CleanExpiredGamesConfig) {
           payer.publicKey.toBase58() &&
         expirySlot < slot
       ) {
-        const signature = await revealAndSettle(game, rpsProgram, payer);
-        console.log(
-          `Cleaned up game ${game.publicKey.toBase58()} ${signature}}`,
-        );
+        try {
+          const signature = await expireAndSettle(game, rpsProgram, payer);
+          console.log(
+            `Cleaned up game ${game.publicKey.toBase58()} ${signature}}`,
+          );
+        } catch (e: any) {
+          console.log('expireAndSettle failed:', e);
+        }
       }
     } else if (
       rpsGame.acceptingSettle &&
       (rpsGame.acceptingSettle as any).player2.revealed?.pubkey.toBase58() ==
         payer.publicKey.toBase58()
     ) {
-      const signature = await settle(game, rpsProgram);
-      console.log(`Settled game ${game.publicKey.toBase58()} ${signature}}`);
+      try {
+        const signature = await settle(game, rpsProgram);
+        console.log(`Settled game ${game.publicKey.toBase58()} ${signature}}`);
+      } catch (e: any) {
+        console.log('settle failed:', e);
+      }
     }
   }
 }
-// TODO: figure out how to do the typing stuff here
-async function revealAndSettle(
+
+async function expireAndSettle(
   game: anchor.ProgramAccount<RPSGameType>,
   rpsProgram: anchor.Program<Rps>,
   payer: Keypair,
@@ -84,7 +92,7 @@ async function revealAndSettle(
       ),
       player2TokenAccount: await getAssociatedTokenAddress(
         rpsGame.acceptingReveal!.config.mint,
-        (rpsGame.acceptingReveal as any).player2.committed?.pubkey,
+        (rpsGame.acceptingReveal as any).player2.revealed?.pubkey,
       ),
       gameAuthority: getGameAuthority(game, rpsProgram),
       escrowTokenAccount: getEscrowAccount(game, rpsProgram),
@@ -102,17 +110,21 @@ async function settle(
   rpsProgram: anchor.Program<Rps>,
 ): Promise<string> {
   const rpsGame = game.account.state;
+  const player1Pubkey =
+    (rpsGame.acceptingSettle as any).player1.revealed?.pubkey ||
+    (rpsGame.acceptingSettle as any).player1.committed?.pubkey;
+
   return await rpsProgram.methods
     .settleGame()
     .accounts({
       game: game.publicKey,
       player1TokenAccount: await getAssociatedTokenAddress(
-        rpsGame.acceptingReveal!.config.mint,
-        (rpsGame.acceptingReveal as any).player1.committed?.pubkey,
+        rpsGame.acceptingSettle!.config.mint,
+        player1Pubkey,
       ),
       player2TokenAccount: await getAssociatedTokenAddress(
-        rpsGame.acceptingReveal!.config.mint,
-        (rpsGame.acceptingReveal as any).player2.committed?.pubkey,
+        rpsGame.acceptingSettle!.config.mint,
+        (rpsGame.acceptingSettle as any).player2.revealed?.pubkey,
       ),
       gameAuthority: getGameAuthority(game, rpsProgram),
       escrowTokenAccount: getEscrowAccount(game, rpsProgram),

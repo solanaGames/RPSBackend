@@ -83,7 +83,7 @@ export async function handleGames(config: HandleGamesConfig) {
         tokenProgram: TOKEN_PROGRAM_ID,
       })
       .signers([payer])
-      .rpc({ skipPreflight: true });
+      .rpc({ skipPreflight: false });
     console.log('Accepted game', tx);
   }
 }
