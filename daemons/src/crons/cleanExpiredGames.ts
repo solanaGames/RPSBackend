@@ -7,7 +7,7 @@ import {
   getGameAuthority,
   getSecret,
 } from '../utils/utils';
-import { IDL } from '../idl/types/rps';
+import { IDL, Rps } from '../idl/types/rps';
 import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID } from '@solana/spl-token';
 
 type CleanExpiredGamesConfig = CronConfig & {
@@ -44,40 +44,78 @@ export async function cleanExpiredGames(config: CleanExpiredGamesConfig) {
           payer.publicKey.toBase58() &&
         expirySlot < slot
       ) {
-        const expireIx = await rpsProgram.methods
-          .expireGame()
-          .accounts({
-            game: game.publicKey,
-            player: payer.publicKey,
-          })
-          .instruction();
-        const settleIx = await rpsProgram.methods
-          .settleGame()
-          .accounts({
-            game: game.publicKey,
-            player1TokenAccount: await getAssociatedTokenAddress(
-              rpsGame.acceptingReveal.config.mint,
-              (rpsGame.acceptingReveal as any).player1.committed?.pubkey,
-            ),
-            player2TokenAccount: await getAssociatedTokenAddress(
-              rpsGame.acceptingReveal.config.mint,
-              (rpsGame.acceptingReveal as any).player2.committed?.pubkey,
-            ),
-            gameAuthority: getGameAuthority(game, rpsProgram),
-            escrowTokenAccount: getEscrowAccount(game, rpsProgram),
-            tokenProgram: TOKEN_PROGRAM_ID,
-          })
-          .instruction();
-        const tx = new Transaction();
-        tx.add(expireIx);
-        tx.add(settleIx);
-        const signature = await rpsProgram.provider.sendAndConfirm!(tx, [
-          payer,
-        ]);
+        const signature = await revealAndSettle(game, rpsProgram, payer);
         console.log(
           `Cleaned up game ${game.publicKey.toBase58()} ${signature}}`,
         );
       }
+    } else if (
+      rpsGame.acceptingSettle &&
+      (rpsGame.acceptingSettle as any).player2.revealed?.pubkey.toBase58() ==
+        payer.publicKey.toBase58()
+    ) {
+      const signature = await settle(game, rpsProgram);
+      console.log(`Settled game ${game.publicKey.toBase58()} ${signature}}`);
     }
   }
+}
+// TODO: figure out how to do the typing stuff here
+async function revealAndSettle(
+  game: any,
+  rpsProgram: anchor.Program<Rps>,
+  payer: Keypair,
+): Promise<string> {
+  const rpsGame = game.account.state;
+  const expireIx = await rpsProgram.methods
+    .expireGame()
+    .accounts({
+      game: game.publicKey,
+      player: payer.publicKey,
+    })
+    .instruction();
+  const settleIx = await rpsProgram.methods
+    .settleGame()
+    .accounts({
+      game: game.publicKey,
+      player1TokenAccount: await getAssociatedTokenAddress(
+        rpsGame.acceptingReveal.config.mint,
+        (rpsGame.acceptingReveal as any).player1.committed?.pubkey,
+      ),
+      player2TokenAccount: await getAssociatedTokenAddress(
+        rpsGame.acceptingReveal.config.mint,
+        (rpsGame.acceptingReveal as any).player2.committed?.pubkey,
+      ),
+      gameAuthority: getGameAuthority(game, rpsProgram),
+      escrowTokenAccount: getEscrowAccount(game, rpsProgram),
+      tokenProgram: TOKEN_PROGRAM_ID,
+    })
+    .instruction();
+  const tx = new Transaction();
+  tx.add(expireIx);
+  tx.add(settleIx);
+  return await rpsProgram.provider.sendAndConfirm!(tx, [payer]);
+}
+
+async function settle(
+  game: any,
+  rpsProgram: anchor.Program<Rps>,
+): Promise<string> {
+  const rpsGame = game.account.state;
+  return await rpsProgram.methods
+    .settleGame()
+    .accounts({
+      game: game.publicKey,
+      player1TokenAccount: await getAssociatedTokenAddress(
+        rpsGame.acceptingReveal.config.mint,
+        (rpsGame.acceptingReveal as any).player1.committed?.pubkey,
+      ),
+      player2TokenAccount: await getAssociatedTokenAddress(
+        rpsGame.acceptingReveal.config.mint,
+        (rpsGame.acceptingReveal as any).player2.committed?.pubkey,
+      ),
+      gameAuthority: getGameAuthority(game, rpsProgram),
+      escrowTokenAccount: getEscrowAccount(game, rpsProgram),
+      tokenProgram: TOKEN_PROGRAM_ID,
+    })
+    .rpc();
 }
