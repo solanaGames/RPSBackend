@@ -1,6 +1,7 @@
 import { program } from 'commander';
 import { CronJob } from 'cron';
 import { cleanExpiredGames } from './crons/cleanExpiredGames';
+import { collectRent } from './crons/collectRent';
 import { handleGames } from './crons/handleGames';
 
 program.version('0.0.1');
@@ -29,6 +30,10 @@ async function runCron(configFile: string) {
     }
     case 'cleanExpiredGames': {
       func = cleanExpiredGames;
+      break;
+    }
+    case 'collectRent': {
+      func = collectRent;
       break;
     }
     default: {

@@ -14,7 +14,7 @@
           "cpu": 500,
           "memory": 500,
           "memoryReservation": 500,
-          "image": "377686316741.dkr.ecr.us-west-1.amazonaws.com/solbet-daemons:5b6195d3e34e6519449705eba252360e92d1c663",
+          "image": "377686316741.dkr.ecr.us-west-1.amazonaws.com/solbet-daemons:1c69ef5a5dbd8e3e06b65b4cdb5f20ea9054095b",
           "command": [
             "yarn",
             "ts-node",
@@ -28,7 +28,7 @@
       "serviceReplacements": {}
     },
     {
-      "id": "game-cleaner",
+      "id": "clean-expired-games",
       "imageRepository": "solbet-daemons",
       "taskTemplate": "./ecs/tasks/templates/daemons.json",
       "taskReplacements": {
@@ -40,7 +40,7 @@
           "cpu": 500,
           "memory": 500,
           "memoryReservation": 500,
-          "image": "377686316741.dkr.ecr.us-west-1.amazonaws.com/solbet-daemons:5b6195d3e34e6519449705eba252360e92d1c663",
+          "image": "377686316741.dkr.ecr.us-west-1.amazonaws.com/solbet-daemons:1c69ef5a5dbd8e3e06b65b4cdb5f20ea9054095b",
           "command": [
             "yarn",
             "ts-node",
@@ -52,6 +52,33 @@
       },
       "serviceTemplate": "./ecs/services/templates/daemons.json",
       "serviceReplacements": {}
+    },
+    {
+      "id": "collect-rent",
+      "imageRepository": "solbet-daemons",
+      "taskTemplate": "./ecs/tasks/templates/daemons.json",
+      "taskReplacements": {
+        "$": {
+          "memory": "500",
+          "cpu": "500"
+        },
+        "$.containerDefinitions[0]": {
+          "cpu": 500,
+          "memory": 500,
+          "memoryReservation": 500,
+          "image": "377686316741.dkr.ecr.us-west-1.amazonaws.com/solbet-daemons:1c69ef5a5dbd8e3e06b65b4cdb5f20ea9054095b",
+          "command": [
+            "yarn",
+            "ts-node",
+            "./src/main.ts",
+            "cron",
+            "./crons/configs/devnet/collectRentConfig.json"
+          ]
+        }
+      },
+      "serviceTemplate": "./ecs/services/templates/daemons.json",
+      "serviceReplacements": {}
     }
+
   ]
 }
