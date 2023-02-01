@@ -14,7 +14,7 @@
           "cpu": 500,
           "memory": 500,
           "memoryReservation": 500,
-          "image": "377686316741.dkr.ecr.us-west-1.amazonaws.com/solbet-daemons:d42482da910f1a027dd2aabaa79415a160ae5f3c",
+          "image": "377686316741.dkr.ecr.us-west-1.amazonaws.com/solbet-daemons:5b6195d3e34e6519449705eba252360e92d1c663",
           "command": [
             "yarn",
             "ts-node",
@@ -40,7 +40,7 @@
           "cpu": 500,
           "memory": 500,
           "memoryReservation": 500,
-          "image": "377686316741.dkr.ecr.us-west-1.amazonaws.com/solbet-daemons:d42482da910f1a027dd2aabaa79415a160ae5f3c",
+          "image": "377686316741.dkr.ecr.us-west-1.amazonaws.com/solbet-daemons:5b6195d3e34e6519449705eba252360e92d1c663",
           "command": [
             "yarn",
             "ts-node",
