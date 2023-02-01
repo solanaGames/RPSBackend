@@ -1,5 +1,6 @@
 import { program } from 'commander';
 import { CronJob } from 'cron';
+import { cleanExpiredGames } from './crons/cleanExpiredGames';
 import { handleGames } from './crons/handleGames';
 
 program.version('0.0.1');
@@ -26,6 +27,10 @@ async function runCron(configFile: string) {
       func = handleGames;
       break;
     }
+    case 'cleanExpiredGames': {
+      func = cleanExpiredGames;
+      break;
+    }
     default: {
       throw 'Unrecognized cron name';
     }
@@ -34,7 +39,6 @@ async function runCron(configFile: string) {
     try {
       console.log(`${nowString()}: Starting cron job ${config.name}`);
       await func(config);
-      const end = new Date(Date.now()).toLocaleString();
       console.log(`${nowString()}: Finished running cron job ${config.name}`);
     } catch (e) {
       console.error(
