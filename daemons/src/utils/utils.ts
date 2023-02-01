@@ -1,6 +1,8 @@
 import * as anchor from '@project-serum/anchor';
 import { PublicKey } from '@solana/web3.js';
-
+import { Rps } from '../idl/types/rps';
+import { RPSGameType } from './types';
+import { BN } from '@project-serum/anchor';
 const AWS = require('aws-sdk');
 
 export function getSecret(secretName: string): Promise<string> {
@@ -28,11 +30,14 @@ export function getSecret(secretName: string): Promise<string> {
   });
 }
 
-export function getExpirySlot(gameState: any): number {
+export function getExpirySlot(gameState: { expiry_slot: BN }): number {
   return (gameState as any).expirySlot.toNumber();
 }
 
-export function getGameAuthority(game: any, program: any): PublicKey {
+export function getGameAuthority(
+  game: anchor.ProgramAccount<RPSGameType>,
+  program: anchor.Program<Rps>,
+): PublicKey {
   const [gameAuthority, _gameAuthorityBump] = PublicKey.findProgramAddressSync(
     [
       Buffer.from(anchor.utils.bytes.utf8.encode('authority')),
@@ -43,7 +48,10 @@ export function getGameAuthority(game: any, program: any): PublicKey {
   return gameAuthority;
 }
 
-export function getEscrowAccount(game: any, program: any): PublicKey {
+export function getEscrowAccount(
+  game: anchor.ProgramAccount<RPSGameType>,
+  program: anchor.Program<Rps>,
+): PublicKey {
   const [escrowTokenAccount, _escrowTokenAccountBump] =
     PublicKey.findProgramAddressSync(
       [

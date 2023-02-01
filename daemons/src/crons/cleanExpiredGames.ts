@@ -9,6 +9,7 @@ import {
 } from '../utils/utils';
 import { IDL, Rps } from '../idl/types/rps';
 import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID } from '@solana/spl-token';
+import { RPSGameType } from '../utils/types';
 
 type CleanExpiredGamesConfig = CronConfig & {
   rpcURL: string;
@@ -61,7 +62,7 @@ export async function cleanExpiredGames(config: CleanExpiredGamesConfig) {
 }
 // TODO: figure out how to do the typing stuff here
 async function revealAndSettle(
-  game: any,
+  game: anchor.ProgramAccount<RPSGameType>,
   rpsProgram: anchor.Program<Rps>,
   payer: Keypair,
 ): Promise<string> {
@@ -78,11 +79,11 @@ async function revealAndSettle(
     .accounts({
       game: game.publicKey,
       player1TokenAccount: await getAssociatedTokenAddress(
-        rpsGame.acceptingReveal.config.mint,
+        rpsGame.acceptingReveal!.config.mint,
         (rpsGame.acceptingReveal as any).player1.committed?.pubkey,
       ),
       player2TokenAccount: await getAssociatedTokenAddress(
-        rpsGame.acceptingReveal.config.mint,
+        rpsGame.acceptingReveal!.config.mint,
         (rpsGame.acceptingReveal as any).player2.committed?.pubkey,
       ),
       gameAuthority: getGameAuthority(game, rpsProgram),
@@ -97,7 +98,7 @@ async function revealAndSettle(
 }
 
 async function settle(
-  game: any,
+  game: anchor.ProgramAccount<RPSGameType>,
   rpsProgram: anchor.Program<Rps>,
 ): Promise<string> {
   const rpsGame = game.account.state;
@@ -106,11 +107,11 @@ async function settle(
     .accounts({
       game: game.publicKey,
       player1TokenAccount: await getAssociatedTokenAddress(
-        rpsGame.acceptingReveal.config.mint,
+        rpsGame.acceptingReveal!.config.mint,
         (rpsGame.acceptingReveal as any).player1.committed?.pubkey,
       ),
       player2TokenAccount: await getAssociatedTokenAddress(
-        rpsGame.acceptingReveal.config.mint,
+        rpsGame.acceptingReveal!.config.mint,
         (rpsGame.acceptingReveal as any).player2.committed?.pubkey,
       ),
       gameAuthority: getGameAuthority(game, rpsProgram),
