@@ -20,7 +20,7 @@
             ],
             "essential": true,
             "entryPoint": [],
-            "workingDirectory": "/home/solbet/app",
+            "workingDirectory": "/home/solbet/app/api",
             "command": [
                 "yarn",
                 "start"

@@ -14,7 +14,7 @@
             "portMappings": [],
             "essential": true,
             "entryPoint": [],
-            "workingDirectory": "/home/solbet/app/",
+            "workingDirectory": "/home/solbet/app/daemons",
             "command": [],
             "environment": [],
             "environmentFiles": [],
