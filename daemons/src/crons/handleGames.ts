@@ -17,6 +17,8 @@ type HandleGamesConfig = CronConfig & {
   walletSecretKey: string;
 };
 
+const gamesToIgnore = new Set<string>();
+
 const mintToMaxBet: { [key: string]: number } = {
   So11111111111111111111111111111111111111112: 1 * 1000000000,
 };
@@ -44,6 +46,9 @@ export async function handleGames(config: HandleGamesConfig) {
       continue;
     }
     if (!mintToMaxBet[rpsGame.acceptingChallenge.config.mint.toBase58()]) {
+      continue;
+    }
+    if (gamesToIgnore.has(game.publicKey.toBase58())) {
       continue;
     }
     const expirySlot = getExpirySlot(rpsGame.acceptingChallenge);

@@ -18,6 +18,8 @@ type CleanExpiredGamesConfig = CronConfig & {
   walletSecretKey: string;
 };
 
+const gamesToIgnore = new Set<string>();
+
 export async function cleanExpiredGames(config: CleanExpiredGamesConfig) {
   const connection = new Connection(config.rpcURL);
   const secret = await getSecret(config.walletSecretKey);
@@ -38,6 +40,9 @@ export async function cleanExpiredGames(config: CleanExpiredGamesConfig) {
   const games = await rpsProgram.account.game.all();
   const slot = await connection.getSlot();
   for (const game of games) {
+    if (gamesToIgnore.has(game.publicKey.toBase58())) {
+      continue;
+    }
     const rpsGame = game.account.state;
     try {
       if (
@@ -62,6 +67,10 @@ export async function cleanExpiredGames(config: CleanExpiredGamesConfig) {
         console.log('Failed', e);
       } else {
         console.log(parsedError);
+        if (parsedError.errorNumber === 3012) {
+          //  Unitialized WSOL account
+          gamesToIgnore.add(game.publicKey.toBase58());
+        }
       }
     }
   }
