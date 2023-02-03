@@ -38,33 +38,23 @@ export async function cleanExpiredGames(config: CleanExpiredGamesConfig) {
   const slot = await connection.getSlot();
   for (const game of games) {
     const rpsGame = game.account.state;
-    if (rpsGame.acceptingReveal) {
-      const expirySlot = getExpirySlot(rpsGame.acceptingReveal);
+    try {
       if (
-        (rpsGame.acceptingReveal as any).player2.revealed?.pubkey.toBase58() ==
-          payer.publicKey.toBase58() &&
-        expirySlot < slot
+        rpsGame.acceptingReveal &&
+        getExpirySlot(rpsGame.acceptingReveal) < slot
       ) {
-        try {
-          const signature = await expireAndSettle(game, rpsProgram, payer);
-          console.log(
-            `Cleaned up game ${game.publicKey.toBase58()} ${signature}}`,
-          );
-        } catch (e: any) {
-          console.log('expireAndSettle failed:', e);
-        }
-      }
-    } else if (
-      rpsGame.acceptingSettle &&
-      (rpsGame.acceptingSettle as any).player2.revealed?.pubkey.toBase58() ==
-        payer.publicKey.toBase58()
-    ) {
-      try {
+        console.log('Attempting expireAndSettle:', game.publicKey.toBase58());
+        const signature = await expireAndSettle(game, rpsProgram, payer);
+        console.log(
+          `Cleaned up game ${game.publicKey.toBase58()} ${signature}}`,
+        );
+      } else if (rpsGame.acceptingSettle) {
+        console.log('Attempting settle:', game.publicKey.toBase58());
         const signature = await settle(game, rpsProgram);
         console.log(`Settled game ${game.publicKey.toBase58()} ${signature}}`);
-      } catch (e: any) {
-        console.log('settle failed:', e);
       }
+    } catch (e: any) {
+      console.log('Failed', e);
     }
   }
 }
