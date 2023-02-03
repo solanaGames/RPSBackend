@@ -41,8 +41,10 @@ export async function cleanExpiredGames(config: CleanExpiredGamesConfig) {
     const rpsGame = game.account.state;
     try {
       if (
-        rpsGame.acceptingReveal &&
-        getExpirySlot(rpsGame.acceptingReveal) < slot
+        (rpsGame.acceptingReveal &&
+          getExpirySlot(rpsGame.acceptingReveal) < slot) ||
+        (rpsGame.acceptingChallenge &&
+          getExpirySlot(rpsGame.acceptingChallenge) < slot)
       ) {
         console.log('Attempting expireAndSettle:', game.publicKey.toBase58());
         const signature = await expireAndSettle(game, rpsProgram, payer);
@@ -71,11 +73,28 @@ async function expireAndSettle(
   payer: Keypair,
 ): Promise<string> {
   const rpsGame = game.account.state;
+  let player1Pubkey;
+  let player2Pubkey;
+  let mint;
+  let expirePlayer;
+  if (game.account.state.acceptingChallenge) {
+    player1Pubkey = (rpsGame.acceptingChallenge as any).player1.committed
+      ?.pubkey;
+    player2Pubkey = player1Pubkey;
+    mint = rpsGame.acceptingChallenge?.config.mint;
+    expirePlayer = player1Pubkey;
+  } else {
+    player1Pubkey = (rpsGame.acceptingReveal as any).player1.committed?.pubkey;
+    player2Pubkey = (rpsGame.acceptingReveal as any).player2.revealed?.pubkey;
+    mint = rpsGame.acceptingReveal!.config.mint;
+    expirePlayer = payer.publicKey;
+  }
+
   const expireIx = await rpsProgram.methods
     .expireGame()
     .accounts({
       game: game.publicKey,
-      player: payer.publicKey,
+      player: expirePlayer,
     })
     .instruction();
   const settleIx = await rpsProgram.methods
@@ -83,12 +102,12 @@ async function expireAndSettle(
     .accounts({
       game: game.publicKey,
       player1TokenAccount: await getAssociatedTokenAddress(
-        rpsGame.acceptingReveal!.config.mint,
-        (rpsGame.acceptingReveal as any).player1.committed?.pubkey,
+        mint!,
+        player1Pubkey,
       ),
       player2TokenAccount: await getAssociatedTokenAddress(
-        rpsGame.acceptingReveal!.config.mint,
-        (rpsGame.acceptingReveal as any).player2.revealed?.pubkey,
+        mint!,
+        player2Pubkey,
       ),
       gameAuthority: getGameAuthority(game, rpsProgram),
       escrowTokenAccount: getEscrowAccount(game, rpsProgram),
