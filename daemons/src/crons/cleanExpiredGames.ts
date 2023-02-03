@@ -2,6 +2,7 @@ import * as anchor from '@coral-xyz/anchor';
 import { Connection, Keypair, PublicKey, Transaction } from '@solana/web3.js';
 import { CronConfig } from '../main';
 import {
+  getErrorCode,
   getEscrowAccount,
   getExpirySlot,
   getGameAuthority,
@@ -54,7 +55,12 @@ export async function cleanExpiredGames(config: CleanExpiredGamesConfig) {
         console.log(`Settled game ${game.publicKey.toBase58()} ${signature}}`);
       }
     } catch (e: any) {
-      console.log('Failed', e);
+      const parsedError = getErrorCode(e.toString());
+      if (parsedError === null) {
+        console.log('Failed', e);
+      } else {
+        console.log(parsedError);
+      }
     }
   }
 }
@@ -103,7 +109,9 @@ async function settle(
   const player1Pubkey =
     (rpsGame.acceptingSettle as any).player1.revealed?.pubkey ||
     (rpsGame.acceptingSettle as any).player1.committed?.pubkey;
-
+  const player2Pubkey =
+    (rpsGame.acceptingSettle as any).player2.revealed?.pubkey ||
+    (rpsGame.acceptingSettle as any).player2.committed?.pubkey;
   return await rpsProgram.methods
     .settleGame()
     .accounts({
@@ -114,7 +122,7 @@ async function settle(
       ),
       player2TokenAccount: await getAssociatedTokenAddress(
         rpsGame.acceptingSettle!.config.mint,
-        (rpsGame.acceptingSettle as any).player2.revealed?.pubkey,
+        player2Pubkey,
       ),
       gameAuthority: getGameAuthority(game, rpsProgram),
       escrowTokenAccount: getEscrowAccount(game, rpsProgram),
