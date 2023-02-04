@@ -3,6 +3,6 @@
     "schedule": "* * * * * *",
     "rpcURL": "https://api.devnet.solana.com",
     "programAddress": "rpskpFCUxMTf7uRHBWydZvVGH3J5C37qmbzQHXbBE6j",
-    "walletSecretKey": "dev-rps-key",
+    "walletSecretKey": "rent-collector-key",
     "redisEndpoint": "redis-cluster.kydgdk.clustercfg.usw1.cache.amazonaws.com"
 }
