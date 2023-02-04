@@ -1,15 +1,9 @@
 import * as anchor from '@coral-xyz/anchor';
 import { Connection, Keypair, PublicKey } from '@solana/web3.js';
 import { CronConfig } from '../main';
-import {
-  getEscrowAccount,
-  getExpirySlot,
-  getGameAuthority,
-  getSecret,
-} from '../utils/utils';
+import { getExpirySlot, getGameAuthority, getSecret } from '../utils/utils';
 import { IDL } from '../idl/types/rps';
 import { randomInt } from 'crypto';
-import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID } from '@solana/spl-token';
 
 type HandleGamesConfig = CronConfig & {
   rpcURL: string;
@@ -19,9 +13,7 @@ type HandleGamesConfig = CronConfig & {
 
 const gamesToIgnore = new Set<string>();
 
-const mintToMaxBet: { [key: string]: number } = {
-  So11111111111111111111111111111111111111112: 1 * 1000000000,
-};
+const MAX_ACCEPTABLE_BET = 1 * 1000000000;
 
 export async function handleGames(config: HandleGamesConfig) {
   const connection = new Connection(config.rpcURL);
@@ -45,9 +37,6 @@ export async function handleGames(config: HandleGamesConfig) {
     if (!rpsGame.acceptingChallenge) {
       continue;
     }
-    if (!mintToMaxBet[rpsGame.acceptingChallenge.config.mint.toBase58()]) {
-      continue;
-    }
     if (gamesToIgnore.has(game.publicKey.toBase58())) {
       continue;
     }
@@ -58,12 +47,7 @@ export async function handleGames(config: HandleGamesConfig) {
       );
       continue;
     }
-    const maxAcceptableBet =
-      mintToMaxBet[rpsGame.acceptingChallenge.config.mint.toBase58()];
-    if (
-      rpsGame.acceptingChallenge.config.wagerAmount.toNumber() >
-      maxAcceptableBet
-    ) {
+    if (game.account.wagerAmount > MAX_ACCEPTABLE_BET) {
       console.log(
         `Ignoring game because wager size is too large. ${game.publicKey.toBase58()}`,
       );
@@ -73,19 +57,12 @@ export async function handleGames(config: HandleGamesConfig) {
     const choice = [{ rock: {} }, { paper: {} }, { scissors: {} }][
       randomInt(0, 3)
     ];
-    const ata = await getAssociatedTokenAddress(
-      rpsGame.acceptingChallenge.config.mint,
-      payer.publicKey,
-    );
     const tx = await rpsProgram.methods
       .joinGame(choice, null)
       .accounts({
         player: payer.publicKey,
         game: game.publicKey,
-        playerTokenAccount: ata,
         gameAuthority: getGameAuthority(game, rpsProgram),
-        escrowTokenAccount: getEscrowAccount(game, rpsProgram),
-        tokenProgram: TOKEN_PROGRAM_ID,
       })
       .signers([payer])
       .rpc({ skipPreflight: false });

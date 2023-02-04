@@ -1,9 +1,8 @@
 import * as anchor from '@project-serum/anchor';
-import { Connection, Keypair, PublicKey } from '@solana/web3.js';
+import { Connection, Keypair, PublicKey, SystemProgram } from '@solana/web3.js';
 import { CronConfig } from '../main';
-import { getEscrowAccount, getGameAuthority, getSecret } from '../utils/utils';
+import { getGameAuthority, getSecret } from '../utils/utils';
 import { IDL } from '../idl/types/rps';
-import { TOKEN_PROGRAM_ID } from '@solana/spl-token';
 
 type CollectRentConfig = CronConfig & {
   rpcURL: string;
@@ -37,9 +36,9 @@ export async function collectRent(config: CollectRentConfig) {
         .accounts({
           game: game.publicKey,
           gameAuthority: getGameAuthority(game, rpsProgram),
-          escrowTokenAccount: getEscrowAccount(game, rpsProgram),
           cleaner: payer.publicKey,
-          tokenProgram: TOKEN_PROGRAM_ID,
+          systemProgram: SystemProgram.programId,
+          rpsProgram: rpsProgram.programId,
         })
         .rpc();
       console.log(`Cleaned game: ${game.publicKey}, ${signature}`);

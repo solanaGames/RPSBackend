@@ -1,15 +1,19 @@
 import * as anchor from '@coral-xyz/anchor';
-import { Connection, Keypair, PublicKey, Transaction } from '@solana/web3.js';
+import {
+  Connection,
+  Keypair,
+  PublicKey,
+  SystemProgram,
+  Transaction,
+} from '@solana/web3.js';
 import { CronConfig } from '../main';
 import {
   getErrorCode,
-  getEscrowAccount,
   getExpirySlot,
   getGameAuthority,
   getSecret,
 } from '../utils/utils';
 import { IDL, Rps } from '../idl/types/rps';
-import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import { RPSGameType } from '../utils/types';
 
 type CleanExpiredGamesConfig = CronConfig & {
@@ -84,18 +88,15 @@ async function expireAndSettle(
   const rpsGame = game.account.state;
   let player1Pubkey;
   let player2Pubkey;
-  let mint;
   let expirePlayer;
   if (game.account.state.acceptingChallenge) {
     player1Pubkey = (rpsGame.acceptingChallenge as any).player1.committed
       ?.pubkey;
     player2Pubkey = player1Pubkey;
-    mint = rpsGame.acceptingChallenge?.config.mint;
     expirePlayer = player1Pubkey;
   } else {
     player1Pubkey = (rpsGame.acceptingReveal as any).player1.committed?.pubkey;
     player2Pubkey = (rpsGame.acceptingReveal as any).player2.revealed?.pubkey;
-    mint = rpsGame.acceptingReveal!.config.mint;
     expirePlayer = payer.publicKey;
   }
 
@@ -110,17 +111,10 @@ async function expireAndSettle(
     .settleGame()
     .accounts({
       game: game.publicKey,
-      player1TokenAccount: await getAssociatedTokenAddress(
-        mint!,
-        player1Pubkey,
-      ),
-      player2TokenAccount: await getAssociatedTokenAddress(
-        mint!,
-        player2Pubkey,
-      ),
+      player1: player1Pubkey!,
+      player2: player2Pubkey!,
+      systemProgram: SystemProgram.programId,
       gameAuthority: getGameAuthority(game, rpsProgram),
-      escrowTokenAccount: getEscrowAccount(game, rpsProgram),
-      tokenProgram: TOKEN_PROGRAM_ID,
     })
     .instruction();
   const tx = new Transaction();
@@ -144,17 +138,10 @@ async function settle(
     .settleGame()
     .accounts({
       game: game.publicKey,
-      player1TokenAccount: await getAssociatedTokenAddress(
-        rpsGame.acceptingSettle!.config.mint,
-        player1Pubkey,
-      ),
-      player2TokenAccount: await getAssociatedTokenAddress(
-        rpsGame.acceptingSettle!.config.mint,
-        player2Pubkey,
-      ),
+      player1: player1Pubkey,
+      player2: player2Pubkey,
+      systemProgram: SystemProgram.programId,
       gameAuthority: getGameAuthority(game, rpsProgram),
-      escrowTokenAccount: getEscrowAccount(game, rpsProgram),
-      tokenProgram: TOKEN_PROGRAM_ID,
     })
     .rpc();
 }
