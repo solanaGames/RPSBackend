@@ -11,7 +11,8 @@ type HandleGamesConfig = CronConfig & {
   walletSecretKey: string;
 };
 
-const gamesToIgnore = new Set<string>();
+let gamesToIgnore = new Set<string>();
+const IGNORED_GAMES_MAX_SIZE = 10000;
 
 const MAX_ACCEPTABLE_BET = 1 * 1000000000;
 
@@ -57,15 +58,23 @@ export async function handleGames(config: HandleGamesConfig) {
     const choice = [{ rock: {} }, { paper: {} }, { scissors: {} }][
       randomInt(0, 3)
     ];
-    const tx = await rpsProgram.methods
-      .joinGame(choice, null)
-      .accounts({
-        player: payer.publicKey,
-        game: game.publicKey,
-        gameAuthority: getGameAuthority(game, rpsProgram),
-      })
-      .signers([payer])
-      .rpc({ skipPreflight: false });
-    console.log('Accepted game', tx);
+    try {
+      const tx = await rpsProgram.methods
+        .joinGame(choice, null)
+        .accounts({
+          player: payer.publicKey,
+          game: game.publicKey,
+          gameAuthority: getGameAuthority(game, rpsProgram),
+        })
+        .signers([payer])
+        .rpc({ skipPreflight: false });
+      console.log('Accepted game', tx);
+      gamesToIgnore.add(game.publicKey.toBase58());
+      if (gamesToIgnore.size > IGNORED_GAMES_MAX_SIZE) {
+        gamesToIgnore = new Set<string>();
+      }
+    } catch (e: any) {
+      console.log(e);
+    }
   }
 }
