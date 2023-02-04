@@ -2,7 +2,7 @@
     "name": "cleanExpiredGames",
     "schedule": "* * * * * *",
     "rpcURL": "https://api.devnet.solana.com",
-    "programAddress": "rpsx2U29nY4LQmzw9kdvc7sgDBYK8N2UXpex3SJofuX",
+    "programAddress": "rpskpFCUxMTf7uRHBWydZvVGH3J5C37qmbzQHXbBE6j",
     "walletSecretKey": "dev-rps-key",
     "redisEndpoint": "redis-cluster.kydgdk.clustercfg.usw1.cache.amazonaws.com"
 }

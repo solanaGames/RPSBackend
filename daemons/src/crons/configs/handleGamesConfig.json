@@ -2,7 +2,7 @@
     "name": "handleGames",
     "schedule": "* * * * * *",
     "rpcURL": "https://lively-white-grass.solana-mainnet.quiknode.pro/88570fa599a0ff6e880c388184136392709a6802/",
-    "programAddress": "rpsx2U29nY4LQmzw9kdvc7sgDBYK8N2UXpex3SJofuX",
+    "programAddress": "rpskpFCUxMTf7uRHBWydZvVGH3J5C37qmbzQHXbBE6j",
     "walletSecretKey": "handle-games-key",
     "redisEndpoint": "redis-cluster.kydgdk.clustercfg.usw1.cache.amazonaws.com"
 }
