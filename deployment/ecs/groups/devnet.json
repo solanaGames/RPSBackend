@@ -14,7 +14,7 @@
           "cpu": 300,
           "memory": 300,
           "memoryReservation": 300,
-          "image": "377686316741.dkr.ecr.us-west-1.amazonaws.com/solbet-daemons:aaf285b56aa27f3c8f44b0a794ad678fc486bfe6",
+          "image": "377686316741.dkr.ecr.us-west-1.amazonaws.com/solbet-daemons:fb267e95ad9d29f4e858b89881b41fd92779f1ba",
           "command": [
             "yarn",
             "ts-node",
@@ -40,39 +40,13 @@
           "cpu": 300,
           "memory": 300,
           "memoryReservation": 300,
-          "image": "377686316741.dkr.ecr.us-west-1.amazonaws.com/solbet-daemons:aaf285b56aa27f3c8f44b0a794ad678fc486bfe6",
+          "image": "377686316741.dkr.ecr.us-west-1.amazonaws.com/solbet-daemons:fb267e95ad9d29f4e858b89881b41fd92779f1ba",
           "command": [
             "yarn",
             "ts-node",
             "./src/main.ts",
             "cron",
             "./crons/configs/devnet/cleanExpiredGamesConfig.json"
-          ]
-        }
-      },
-      "serviceTemplate": "./ecs/services/templates/daemons.json",
-      "serviceReplacements": {}
-    },
-    {
-      "id": "collect-rent",
-      "imageRepository": "solbet-daemons",
-      "taskTemplate": "./ecs/tasks/templates/daemons.json",
-      "taskReplacements": {
-        "$": {
-          "memory": "300",
-          "cpu": "300"
-        },
-        "$.containerDefinitions[0]": {
-          "cpu": 300,
-          "memory": 300,
-          "memoryReservation": 300,
-          "image": "377686316741.dkr.ecr.us-west-1.amazonaws.com/solbet-daemons:aaf285b56aa27f3c8f44b0a794ad678fc486bfe6",
-          "command": [
-            "yarn",
-            "ts-node",
-            "./src/main.ts",
-            "cron",
-            "./crons/configs/devnet/collectRentConfig.json"
           ]
         }
       },
