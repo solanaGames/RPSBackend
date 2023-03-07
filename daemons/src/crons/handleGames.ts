@@ -31,6 +31,13 @@ export async function handleGames(config: HandleGamesConfig) {
     new PublicKey(config.programAddress),
     provider,
   );
+  const [playerInfo, _playerInfoBump] = PublicKey.findProgramAddressSync(
+    [
+      Buffer.from(anchor.utils.bytes.utf8.encode('player_info')),
+      payer.publicKey.toBuffer(),
+    ],
+    rpsProgram.programId,
+  );
   const games = await rpsProgram.account.game.all();
   const slot = await connection.getSlot();
   for (const game of games) {
@@ -65,6 +72,7 @@ export async function handleGames(config: HandleGamesConfig) {
           player: payer.publicKey,
           game: game.publicKey,
           gameAuthority: getGameAuthority(game, rpsProgram),
+          playerInfo: playerInfo,
         })
         .signers([payer])
         .rpc({ skipPreflight: false });

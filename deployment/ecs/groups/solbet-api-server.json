@@ -7,7 +7,7 @@
       "taskTemplate": "./ecs/tasks/templates/solbet-api-server.json",
       "taskReplacements": {
         "$.containerDefinitions[0]": {
-          "image": "377686316741.dkr.ecr.us-west-1.amazonaws.com/solbet-api-server:1d389d604063a3fc3422222fc4080c8e4b9ceea6"
+          "image": "377686316741.dkr.ecr.us-west-1.amazonaws.com/solbet-api-server:26e7f1bab6099577b9c9ba20e451327ac91ed229"
         }
       }
     }

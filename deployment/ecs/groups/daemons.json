@@ -52,32 +52,6 @@
       },
       "serviceTemplate": "./ecs/services/templates/daemons.json",
       "serviceReplacements": {}
-    },
-    {
-      "id": "collect-rent",
-      "imageRepository": "solbet-daemons",
-      "taskTemplate": "./ecs/tasks/templates/daemons.json",
-      "taskReplacements": {
-        "$": {
-          "memory": "500",
-          "cpu": "500"
-        },
-        "$.containerDefinitions[0]": {
-          "cpu": 500,
-          "memory": 500,
-          "memoryReservation": 500,
-          "image": "377686316741.dkr.ecr.us-west-1.amazonaws.com/solbet-daemons:d42482da910f1a027dd2aabaa79415a160ae5f3c",
-          "command": [
-            "yarn",
-            "ts-node",
-            "./src/main.ts",
-            "cron",
-            "./crons/configs/collectRentConfig.json"
-          ]
-        }
-      },
-      "serviceTemplate": "./ecs/services/templates/daemons.json",
-      "serviceReplacements": {}
     }
   ]
 }

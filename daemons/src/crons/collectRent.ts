@@ -36,7 +36,6 @@ export async function collectRent(config: CollectRentConfig) {
         .accounts({
           game: game.publicKey,
           gameAuthority: getGameAuthority(game, rpsProgram),
-          cleaner: payer.publicKey,
           systemProgram: SystemProgram.programId,
           rpsProgram: rpsProgram.programId,
         })

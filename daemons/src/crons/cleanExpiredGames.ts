@@ -62,7 +62,7 @@ export async function cleanExpiredGames(config: CleanExpiredGamesConfig) {
         );
       } else if (rpsGame.acceptingSettle) {
         console.log('Attempting settle:', game.publicKey.toBase58());
-        const signature = await settle(game, rpsProgram);
+        const signature = await settle(game, rpsProgram, payer);
         console.log(`Settled game ${game.publicKey.toBase58()} ${signature}}`);
       }
     } catch (e: any) {
@@ -99,12 +99,28 @@ async function expireAndSettle(
     player2Pubkey = (rpsGame.acceptingReveal as any).player2.revealed?.pubkey;
     expirePlayer = payer.publicKey;
   }
+  const [player2Info, _player2InfoBump] = PublicKey.findProgramAddressSync(
+    [
+      Buffer.from(anchor.utils.bytes.utf8.encode('player_info')),
+      player2Pubkey.toBuffer(),
+    ],
+    rpsProgram.programId,
+  );
+
+  const [player1Info, _player1InfoBump] = PublicKey.findProgramAddressSync(
+    [
+      Buffer.from(anchor.utils.bytes.utf8.encode('player_info')),
+      player1Pubkey.toBuffer(),
+    ],
+    rpsProgram.programId,
+  );
 
   const expireIx = await rpsProgram.methods
     .expireGame()
     .accounts({
       game: game.publicKey,
       player: expirePlayer,
+      playerInfo: player2Info,
     })
     .instruction();
   const settleIx = await rpsProgram.methods
@@ -115,17 +131,32 @@ async function expireAndSettle(
       player2: player2Pubkey!,
       systemProgram: SystemProgram.programId,
       gameAuthority: getGameAuthority(game, rpsProgram),
+      player1Info: player1Info,
+      player2Info: player2Info,
+    })
+    .instruction();
+
+  const cleanIx = await rpsProgram.methods
+    .cleanGame()
+    .accounts({
+      game: game.publicKey,
+      gameAuthority: getGameAuthority(game, rpsProgram),
+      systemProgram: SystemProgram.programId,
+      rpsProgram: rpsProgram.programId,
+      player1: player1Pubkey,
     })
     .instruction();
   const tx = new Transaction();
   tx.add(expireIx);
   tx.add(settleIx);
+  tx.add(cleanIx);
   return await rpsProgram.provider.sendAndConfirm!(tx, [payer]);
 }
 
 async function settle(
   game: anchor.ProgramAccount<RPSGameType>,
   rpsProgram: anchor.Program<Rps>,
+  payer: Keypair,
 ): Promise<string> {
   const rpsGame = game.account.state;
   const player1Pubkey =
@@ -134,7 +165,23 @@ async function settle(
   const player2Pubkey =
     (rpsGame.acceptingSettle as any).player2.revealed?.pubkey ||
     (rpsGame.acceptingSettle as any).player2.committed?.pubkey;
-  return await rpsProgram.methods
+  const [player2Info, _player2InfoBump] = PublicKey.findProgramAddressSync(
+    [
+      Buffer.from(anchor.utils.bytes.utf8.encode('player_info')),
+      player2Pubkey.toBuffer(),
+    ],
+    rpsProgram.programId,
+  );
+
+  const [player1Info, _player1InfoBump] = PublicKey.findProgramAddressSync(
+    [
+      Buffer.from(anchor.utils.bytes.utf8.encode('player_info')),
+      player1Pubkey.toBuffer(),
+    ],
+    rpsProgram.programId,
+  );
+
+  const settleIx = await rpsProgram.methods
     .settleGame()
     .accounts({
       game: game.publicKey,
@@ -142,6 +189,22 @@ async function settle(
       player2: player2Pubkey,
       systemProgram: SystemProgram.programId,
       gameAuthority: getGameAuthority(game, rpsProgram),
+      player1Info: player1Info,
+      player2Info: player2Info,
     })
-    .rpc();
+    .instruction();
+  const cleanIx = await rpsProgram.methods
+    .cleanGame()
+    .accounts({
+      game: game.publicKey,
+      gameAuthority: getGameAuthority(game, rpsProgram),
+      systemProgram: SystemProgram.programId,
+      rpsProgram: rpsProgram.programId,
+      player1: player1Pubkey,
+    })
+    .instruction();
+  const tx = new Transaction();
+  tx.add(settleIx);
+  tx.add(cleanIx);
+  return await rpsProgram.provider.sendAndConfirm!(tx, [payer]);
 }
