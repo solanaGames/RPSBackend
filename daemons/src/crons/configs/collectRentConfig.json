@@ -1,8 +1,0 @@
-{
-    "name": "collectRent",
-    "schedule": "* * * * * *",
-    "rpcURL": "https://lively-white-grass.solana-mainnet.quiknode.pro/88570fa599a0ff6e880c388184136392709a6802/",
-    "programAddress": "rpskpFCUxMTf7uRHBWydZvVGH3J5C37qmbzQHXbBE6j",
-    "walletSecretKey": "rent-collector-key",
-    "redisEndpoint": "redis-cluster.kydgdk.clustercfg.usw1.cache.amazonaws.com"
-}
